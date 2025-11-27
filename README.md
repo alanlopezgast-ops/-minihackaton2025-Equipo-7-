@@ -1,4 +1,4 @@
-# -minihackaton2025-Equipo-7-
+<img width="620" height="288" alt="image" src="https://github.com/user-attachments/assets/5bc9802e-8244-44e2-9882-18f153bdf56b" /># -minihackaton2025-Equipo-7-
 Pagina para el examen de la unidad 3 
 ---
 El primer paso para comenzar con el proyecto es que todos los integrantes del equipo se unan a una misma sesión en conjunto de Visual Studio Code para editar el mismo proyecto. Esto se logra gracias a la extensión de VSC "Live Share", esta extensión se instala en el apartado de "descargar extensiones".
@@ -12,3 +12,12 @@ Una vez instalada debe decidirse quien sera el host del server y este usuario de
 El siguiente paso es crear un archivo ".env" en el nucleo del proyecto, este archivo permite guardar variables y llamarlas desde otros archivos.
 <img width="466" height="304" alt="image" src="https://github.com/user-attachments/assets/ae11f625-9120-42da-9530-45fc970a7e58" />
 
+El siguiente paso es crear un archivo llamado "nodemon.json" y agregamos el siguiente bloque de código 
+```
+{
+  "watch": ["server.js", "public"],
+  "ext": "js,html,css,json",
+  "ignore": ["node_modules", ".git"],
+  "exec": "node server.js"
+}
+```
