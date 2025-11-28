@@ -180,3 +180,75 @@ app.get('/tipo-usuario', requireLogin, (req, res) => {
 });
 ```
 Para poner escoger que tipos de usuario tengas acceso a los apartados de la página.
+
+Para realizar la busqueda en vivo, es necesario agregar en server.js el siguiente bloque:
+```
+// Búsqueda en vivo de instrumentos
+app.get('/api/instrumentos/buscar', requireLogin, (req, res) => {
+  const q = req.query.q || '';
+  const sql = `
+    SELECT * FROM instrumentos
+    WHERE nombre LIKE ? OR categoria LIKE ? OR estado LIKE ? OR ubicacion LIKE ?
+    LIMIT 50
+  `;
+  const search = `%${q}%`;
+  connection.query(sql, [search, search, search, search], (err, results) => {
+    if (err) {
+      console.error(err);
+      return res.status(500).json({ error: 'Error consultando instrumentos' });
+    }
+    res.json(results);
+  });
+});
+```
+
+Y en el archivo instrumentos.html agregar el apartado visual:
+```
+// Búsqueda en vivo
+document.getElementById("searchInput").addEventListener("input",(e)=>{
+  loadInstrumentos(e.target.value);
+});
+```
+
+Para actualizar el estado de un instrumento o borrarlo, es necesario agregar el CRUD en el mismo archivo donde esta la tabla, en este caso se debe de colocar en instrumento.html:
+```
+
+// Eliminar instrumento
+async function deleteInstrumento(id){
+  if (!confirm("¿Confirmas eliminar este instrumento?")) return;
+  const res = await fetch(`/api/instrumentos/${id}`,{method:"DELETE"});
+  if(res.ok) loadInstrumentos();
+}
+
+// Cambiar estado
+async function cambiarEstado(id){
+  const nuevoEstado = prompt("Ingrese el nuevo estado del instrumento:");
+
+  if (!nuevoEstado) return;
+
+  const res = await fetch(`/api/instrumentos/${id}/estado`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ nuevo_estado: nuevoEstado })
+  });
+
+  if(res.ok){
+    alert("Estado actualizado correctamente");
+    loadInstrumentos();
+  } else {
+    alert("Error al actualizar el estado");
+  }
+}
+```
+
+Para subir a excel se agrega un apartado en index.html:
+```
+  <form action="/cargar_instrumento" method="POST" enctype="multipart/form-data">
+    <label>Subir archivo Excel (.xlsx):</label>
+    <input type="file" name="excelFile" accept=".xlsx" required>
+    <button type="submit">Cargar Instrumentos</button>
+  </form>
+```
+
+
+
