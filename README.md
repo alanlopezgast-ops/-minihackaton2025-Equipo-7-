@@ -250,5 +250,42 @@ Para subir a excel se agrega un apartado en index.html:
   </form>
 ```
 
+En server.js se debe agregar las siguientes acciones que nos permitiran subir los documentos de excel y cargar los instrumentos en la tabla, y también descargar la tabla actual.
+```
+app.get('/descarga_instrumentos', (req, res) => {
+  const sql = `SELECT * FROM instrumentos`;
+  connection.query(sql, (err, results) => {
+    if (err) throw err;
+
+    const worksheet = xlsx.utils.json_to_sheet(results);
+    const workbook = xlsx.utils.book_new();
+    xlsx.utils.book_append_sheet(workbook, worksheet, 'instrumentos');
+
+    const filePath = path.join(__dirname, 'uploads', 'instrumentos.xlsx');
+
+    xlsx.writeFile(workbook, filePath);
+    res.download(filePath, 'Lista Instrumentos.xlsx');
+  });
+});
+//ruta para manejar la carga de paciente 
+
+app.post('/cargar_instrumento', upload.single('excelFile'), (req, res) => {
+  const filePath = req.file.path;
+  const workbook = xlsx.readFile(filePath);
+  const sheetName = workbook.SheetNames[0];
+  const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+  data.forEach(row => {
+    //CAMBIO SUTIL: Usar los nombres correctos de las columnas
+    const { Nombre, Categoria, Estado, Ubicacion } = row;
+    const sql = `INSERT INTO instrumentos (nombre, categoria, estado, ubicacion) VALUES (?, ?, ?, ?)`;
+    connection.query(sql, [Nombre, Categoria, Estado, Ubicacion], err => {
+      if (err) throw err;
+    });
+  });
+
+  res.send('<h1>Archivo cargado y datos guardados</h1><a href="/">Volver</a>');
+});
+```
 
 
