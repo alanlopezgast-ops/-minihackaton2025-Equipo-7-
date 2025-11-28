@@ -1,6 +1,14 @@
 Pagina para el examen de la unidad 3 
 ---
-El primer paso para comenzar con el proyecto es que todos los integrantes del equipo se unan a una misma sesión en conjunto de Visual Studio Code para editar el mismo proyecto. Esto se logra gracias a la extensión de VSC "Live Share", esta extensión se instala en el apartado de "descargar extensiones".
+El primer paso para comenzar con el proyecto es que todos los integrantes del equipo se unan a una misma sesión en conjunto de Visual Studio Code para editar el mismo proyecto. Esto se logra gracias a la extensión de VSC "Live Share", esta extensión se instala en el apartado de "descargar extensiones". Ademas en necesario descargar más extensiones como: 
+
+```
+npm install bcrypt
+```
+y 
+```
+npm install -g nodemon
+```
 
 <img width="509" height="454" alt="image" src="https://github.com/user-attachments/assets/4f34cbbd-8120-4c95-8e91-573bcd5d8752" />
 
@@ -28,4 +36,116 @@ En la parte de scripts del archivo "package.json" cambiamos en la parte de start
     "start": "nodemon",
     "dev": "nodemon server.js"
   },
+```
+
+Para crear el login creamos un documento html con el siguiente codigo:
+```
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Iniciar Sesión</title>
+   <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <h2>Iniciar Sesión</h2>
+  <form action="/login" method="POST">
+    <label for="nombre_usuario">Nombre de Usuario:</label>
+    <input type="text" id="nombre_usuario" name="nombre_usuario" required>
+    <br>
+    <label for="password">Contraseña:</label>
+    <input type="password" id="password" name="password" required>
+    <br>
+    <button type="submit">Iniciar Sesión</button>
+  </form>
+  <p>¿No tienes cuenta? <a href="/registro">Regístrate aquí</a></p>
+</body>
+</html>
+```
+
+Y en _Server_ agruegar la siguiente funcion: 
+```
+app.post('/login', (req, res) => {
+    const { nombre_usuario, password } = req.body;
+    console.log(req.body);
+
+    const query = 'SELECT * FROM usuarios WHERE nombre = ?';
+    connection.query(query, [nombre_usuario], (err, results) => {
+        if (err) {
+          let html =`<html>
+          <head>
+            <link rel="stylesheet" href="/styles.css">
+            <title>Medicos</title>
+          </head>
+          <body>
+            <p></p>
+            <h4>Error de Operacion</h4>
+            <p></p>
+            <h3> No se pudo obtener al usuario  </h3>
+            <p></p>
+            <button onclick="window.location.href='/'">Regresar</button>
+          </body>
+          </html>
+      
+      
+          </html>`;
+          
+          return res.send(html);
+        }
+
+        if (results.length === 0) {
+           let html =`<html>
+          <head>
+            <link rel="stylesheet" href="/styles.css">
+            <title>Medicos</title>
+          </head>
+          <body>
+            <p></p>
+            <h4>Error de Operacion</h4>
+            <p></p>
+            <h3> No se pudo obtener al usuario  </h3>
+            <p></p>
+            <button onclick="window.location.href='/'">Regresar</button>
+          </body>
+          </html>
+          
+          
+          </html>`;
+            return res.send(html);
+        }
+
+        const user = results[0];
+
+        const isPasswordValid = bcrypt.compareSync(password, user.password_hash);
+        if (!isPasswordValid) {
+          let html =`<html>
+          <head>
+            <link rel="stylesheet" href="/styles.css">
+            <title>Medicos</title>
+          </head>
+          <body>
+            <p></p>
+            <h4>Error de Operacion</h4>
+            <p></p>
+            <h3> Contrasena incorrecta  </h3>
+            <p></p>
+            <button onclick="window.location.href='/'">Regresar</button>
+          </body>
+          </html>
+          
+          
+          </html>`;
+
+            return res.send(html);
+        }
+
+        req.session.user = {
+            id: user.id,
+            username: user.nombre_usuario,
+            tipo_usuario: user.rol
+        };
+
+        res.redirect('/');
+    });
+});
 ```
