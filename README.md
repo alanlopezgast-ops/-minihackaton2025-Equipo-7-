@@ -288,4 +288,37 @@ app.post('/cargar_instrumento', upload.single('excelFile'), (req, res) => {
 });
 ```
 
+Para crear la navbar es necesario crear un archivo llamadao "navbar.html", que contenga lo siguiente:
+```
+<nav>
+  <ul id="menu"></ul>
+</nav>
+<script>
+  window.onload = () => {
+    fetch('/menu')
+      .then(res => res.json())
+      .then(data => {
+        const menu = document.getElementById('menu');
+        data.forEach(item => {
+          const li = document.createElement('li');
+          li.innerHTML = `<a href="${item.url}">${item.nombre}</a>`;
+          menu.appendChild(li);
+        });
+      });
+  };
+</script>
+```
 
+Y en server.js:
+```
+app.get('/menu', (req, res) => {
+  const menuItems = [
+    { nombre: 'Inicio', url: '/' },
+    { nombre: 'Cerrar Sesion ', url: '/login.html' },
+    { nombre: 'instrumentos', url: '/instrumento.html' }
+  ];
+  res.json(menuItems);
+});
+```
+
+Esto permitira que las rutas de la navbar realmente manden a los distintos apartados de la pagina web, también permitirá que la barra se quede fija. 
