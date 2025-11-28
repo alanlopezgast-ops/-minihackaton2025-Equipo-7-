@@ -149,3 +149,34 @@ app.post('/login', (req, res) => {
     });
 });
 ```
+
+Para que solo usuarios logeados en la pagina puedan acceder a los distintos apartados debe ponerse en server: 
+```
+app.get('/', requireLogin, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+```
+
+Para poder destruir la sesión en caso de querer cerrar la sesión se coloca en server el siguiente bloque de codigo:
+```
+app.get('/logout', (req, res) => {
+  req.session.destroy();
+  res.redirect('/login');
+});
+```
+
+Es necesario crearse varias tablas en la base de datos, en especial una que contenga los codigos de acceso para registrarse como tipo de usuario entre los diferentes que hay. 
+```
+CREATE TABLE tipo_usuario (
+    codigo_acceso VARCHAR(20),
+    tipo_usuario VARCHAR(10)
+);
+```
+
+En server se debe agregar:
+```
+app.get('/tipo-usuario', requireLogin, (req, res) => {
+    res.json({ tipo_usuario: req.session.user.tipo_usuario });
+});
+```
+Para poner escoger que tipos de usuario tengas acceso a los apartados de la página.
