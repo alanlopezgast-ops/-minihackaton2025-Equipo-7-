@@ -1,4 +1,5 @@
 Pagina para el examen de la unidad 3 
+## Instalar extensiones
 ---
 El primer paso para comenzar con el proyecto es que todos los integrantes del equipo se unan a una misma sesión en conjunto de Visual Studio Code para editar el mismo proyecto. Esto se logra gracias a la extensión de VSC "Live Share", esta extensión se instala en el apartado de "descargar extensiones". Ademas en necesario descargar más extensiones como: 
 
@@ -16,6 +17,7 @@ Una vez instalada debe decidirse quien sera el host del server y este usuario de
 
 <img width="1100" height="399" alt="image" src="https://github.com/user-attachments/assets/f3c6ab9c-bc6c-47b1-bec2-ff00d38bc01e" />
 
+## Env y Nodemon
 El siguiente paso es crear un archivo ".env" en el nucleo del proyecto, este archivo permite guardar variables y llamarlas desde otros archivos.
 <img width="466" height="304" alt="image" src="https://github.com/user-attachments/assets/ae11f625-9120-42da-9530-45fc970a7e58" />
 
@@ -165,6 +167,7 @@ app.get('/logout', (req, res) => {
 });
 ```
 
+## Roles (ADMIN/ASISTENTE/AUDITOR) aplicados en rutas	
 Es necesario crearse varias tablas en la base de datos, en especial una que contenga los codigos de acceso para registrarse como tipo de usuario entre los diferentes que hay. 
 ```
 CREATE TABLE tipo_usuario (
@@ -181,6 +184,7 @@ app.get('/tipo-usuario', requireLogin, (req, res) => {
 ```
 Para poner escoger que tipos de usuario tengas acceso a los apartados de la página.
 
+## Búsqueda en vivo	
 Para realizar la busqueda en vivo, es necesario agregar en server.js el siguiente bloque:
 ```
 // Búsqueda en vivo de instrumentos
@@ -210,6 +214,7 @@ document.getElementById("searchInput").addEventListener("input",(e)=>{
 });
 ```
 
+## CRUD de instrumentos	
 Para actualizar el estado de un instrumento o borrarlo, es necesario agregar el CRUD en el mismo archivo donde esta la tabla, en este caso se debe de colocar en instrumento.html:
 ```
 
@@ -241,6 +246,7 @@ async function cambiarEstado(id){
 }
 ```
 
+## Excel (subir y descargar)	
 Para subir a excel se agrega un apartado en index.html:
 ```
   <form action="/cargar_instrumento" method="POST" enctype="multipart/form-data">
@@ -288,6 +294,7 @@ app.post('/cargar_instrumento', upload.single('excelFile'), (req, res) => {
 });
 ```
 
+## Navbar
 Para crear la navbar es necesario crear un archivo llamadao "navbar.html", que contenga lo siguiente:
 ```
 <nav>
