@@ -47,9 +47,15 @@ function requireRole(allowedRoles) {
             return res.status(403).send('Usuario sin rol asignado');
         }
         
+        // Convertir roles a mayúsculas para comparación consistente
+        const userRoleUpper = userRole.toUpperCase();
+        const allowedRolesUpper = Array.isArray(allowedRoles) 
+            ? allowedRoles.map(role => role.toUpperCase())
+            : allowedRoles.toUpperCase();
+        
         // Si allowedRoles es array
         if (Array.isArray(allowedRoles)) {
-            if (allowedRoles.includes(userRole)) {
+            if (allowedRolesUpper.includes(userRoleUpper)) {
                 console.log('Access GRANTED - role in allowed list');
                 next();
             } else {
@@ -69,7 +75,7 @@ function requireRole(allowedRoles) {
         } 
         // Si es string
         else {
-            if (userRole === allowedRoles) {
+            if (userRoleUpper === allowedRolesUpper) {
                 console.log('Acceso habilitado - rol permitido');
                 next();
             } else {
@@ -281,7 +287,7 @@ app.get('/menu', (req, res) => {
 });
 
 // Ruta para guardar datos en la base de datos
-app.post('/subir_instrumento', requireLogin ,(req, res) => {
+app.post('/subir_instrumento', requireLogin ,requireRole(['ADMIN','ASISTENTE']),(req, res) => {
   const { nombre_instrumento, categoria_instrumento, estado_instrumento, ubicacion_instrumento} = req.body;
   
   const query = 'INSERT INTO instrumentos (nombre, categoria, estado , ubicacion ) VALUES (?, ?, ?, ?)';
@@ -347,7 +353,7 @@ app.get('/api/instrumentos/buscar', requireLogin, (req, res) => {
   });
 });
 
-app.delete('/api/instrumentos/:id', requireLogin, requireRole(['ADMIN']), (req, res) => {
+app.delete('/api/instrumentos/:id', requireLogin, requireRole('ADMIN'), (req, res) => {
     const { id } = req.params;
     const sql = 'DELETE FROM instrumentos WHERE id = ?';
     connection.query(sql, [id], (err, result) => {
@@ -360,7 +366,7 @@ app.delete('/api/instrumentos/:id', requireLogin, requireRole(['ADMIN']), (req, 
 });
 
 // Descargar lista de instrumentos 
-app.get('/descarga_instrumentos', (req, res) => {
+app.get('/descarga_instrumentos',requireLogin, requireRole(['ADMIN','ASISTENTE','AUDITOR']), (req, res) => {
   const sql = `SELECT * FROM instrumentos`;
   connection.query(sql, (err, results) => {
     if (err) throw err;
@@ -377,7 +383,7 @@ app.get('/descarga_instrumentos', (req, res) => {
 });
 //ruta para manejar la carga de paciente 
 
-app.post('/cargar_instrumento', upload.single('excelFile'), (req, res) => {
+app.post('/cargar_instrumento', upload.single('excelFile'), requireRole(['ADMIN','ASISTENTE']), (req, res) => {
   const filePath = req.file.path;
   const workbook = xlsx.readFile(filePath);
   const sheetName = workbook.SheetNames[0];
@@ -388,25 +394,6 @@ app.post('/cargar_instrumento', upload.single('excelFile'), (req, res) => {
     const { Nombre, Categoria, Estado, Ubicacion } = row;
     const sql = `INSERT INTO instrumentos (nombre, categoria, estado, ubicacion) VALUES (?, ?, ?, ?)`;
     connection.query(sql, [Nombre, Categoria, Estado, Ubicacion], err => {
-      if (err) throw err;
-    });
-  });
-
-  res.send('<h1>Archivo cargado y datos guardados</h1><a href="/">Volver</a>');
-});
-
-//ruta para manejar la carga Archivo excel de medico 
-
-app.post('/cargarmedicos', upload.single('excelFile'), (req, res) => {
-  const filePath = req.file.path;
-  const workbook = xlsx.readFile(filePath);
-  const sheetName = workbook.SheetNames[0];
-  const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
-
-  data.forEach(row => {
-    const { nombre, especialidad} = row
-    const sql = `INSERT INTO medicos  (nombre, especialidad) VALUES (?, ?)`;
-    connection.query(sql, [nombre, especialidad ], err => {
       if (err) throw err;
     });
   });
@@ -439,7 +426,7 @@ app.get('/api/instrumentos/buscar', requireLogin, requireRole(['ADMIN','ASISTENT
 });
 
 // Actualizar estado de un instrumento
-app.put('/api/instrumentos/:id/estado', requireLogin, requireRole(['ADMIN']), (req, res) => {
+app.put('/api/instrumentos/:id/estado', requireLogin, requireRole('ADMIN'), (req, res) => {
   const { id } = req.params;
   const { nuevo_estado } = req.body;
 
